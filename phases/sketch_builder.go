@@ -30,13 +30,14 @@
 package phases
 
 import (
+	"os"
+	"path/filepath"
+
 	"github.com/arduino/arduino-builder/builder_utils"
 	"github.com/arduino/arduino-builder/constants"
 	"github.com/arduino/arduino-builder/i18n"
 	"github.com/arduino/arduino-builder/types"
 	"github.com/arduino/arduino-builder/utils"
-	"os"
-	"path/filepath"
 )
 
 type SketchBuilder struct{}
@@ -55,8 +56,16 @@ func (s *SketchBuilder) Run(ctx *types.Context) error {
 		return i18n.WrapError(err)
 	}
 
+	var sketchModel *types.CodeModelLibrary
+	if ctx.CodeModelBuilder != nil {
+		sketchModel = new(types.CodeModelLibrary)
+		ctx.CodeModelBuilder.Sketch = sketchModel
+	} else {
+		sketchModel = nil
+	}
+
 	var objectFiles []string
-	objectFiles, err = builder_utils.CompileFiles(objectFiles, sketchBuildPath, false, sketchBuildPath, buildProperties, includes, verbose, warningsLevel, logger)
+	objectFiles, err = builder_utils.CompileFiles(objectFiles, sketchBuildPath, false, sketchBuildPath, buildProperties, includes, verbose, warningsLevel, logger, sketchModel)
 	if err != nil {
 		return i18n.WrapError(err)
 	}
@@ -64,7 +73,7 @@ func (s *SketchBuilder) Run(ctx *types.Context) error {
 	// The "src/" subdirectory of a sketch is compiled recursively
 	sketchSrcPath := filepath.Join(sketchBuildPath, constants.SKETCH_FOLDER_SRC)
 	if info, err := os.Stat(sketchSrcPath); err == nil && info.IsDir() {
-		objectFiles, err = builder_utils.CompileFiles(objectFiles, sketchSrcPath, true, sketchSrcPath, buildProperties, includes, verbose, warningsLevel, logger)
+		objectFiles, err = builder_utils.CompileFiles(objectFiles, sketchSrcPath, true, sketchSrcPath, buildProperties, includes, verbose, warningsLevel, logger, sketchModel)
 		if err != nil {
 			return i18n.WrapError(err)
 		}

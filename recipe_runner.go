@@ -30,13 +30,14 @@
 package builder
 
 import (
+	"os"
+	"sort"
+	"strings"
+
 	"github.com/arduino/arduino-builder/builder_utils"
 	"github.com/arduino/arduino-builder/constants"
 	"github.com/arduino/arduino-builder/i18n"
 	"github.com/arduino/arduino-builder/types"
-	"os"
-	"sort"
-	"strings"
 )
 
 type RecipeByPrefixSuffixRunner struct {
@@ -55,11 +56,16 @@ func (s *RecipeByPrefixSuffixRunner) Run(ctx *types.Context) error {
 
 	recipes := findRecipes(buildProperties, s.Prefix, s.Suffix)
 
+	if ctx.CodeModelBuilder != nil {
+		return nil
+	}
+
 	properties := buildProperties.Clone()
 	for _, recipe := range recipes {
 		if ctx.DebugLevel >= 10 {
 			logger.Fprintln(os.Stdout, constants.LOG_LEVEL_DEBUG, constants.MSG_RUNNING_RECIPE, recipe)
 		}
+
 		_, err := builder_utils.ExecRecipe(properties, recipe, false, verbose, verbose, logger)
 		if err != nil {
 			return i18n.WrapError(err)

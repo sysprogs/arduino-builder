@@ -239,7 +239,7 @@ type OutputCodeModel struct{}
 
 func (s *OutputCodeModel) Run(ctx *types.Context) error {
 	if ctx.CodeModelBuilder != nil {
-		var bytes, err = json.Marshal(ctx.CodeModelBuilder)
+		var bytes, err = json.MarshalIndent(ctx.CodeModelBuilder, "", "    ")
 		if err != nil {
 			return err
 		}

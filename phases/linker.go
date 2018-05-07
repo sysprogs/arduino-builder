@@ -65,6 +65,11 @@ func (s *Linker) Run(ctx *types.Context) error {
 	warningsLevel := ctx.WarningsLevel
 	logger := ctx.GetLogger()
 
+	if ctx.CodeModelBuilder != nil {
+		//Nothing to do, we are not actually linking
+		return nil
+	}
+
 	err = link(objectFiles, coreDotARelPath, coreArchiveFilePath, buildProperties, verbose, warningsLevel, logger)
 	if err != nil {
 		return i18n.WrapError(err)

@@ -47,7 +47,7 @@ type Sizer struct {
 
 func (s *Sizer) Run(ctx *types.Context) error {
 
-	if s.SketchError {
+	if s.SketchError || ctx.CodeModelBuilder != nil {
 		return nil
 	}
 

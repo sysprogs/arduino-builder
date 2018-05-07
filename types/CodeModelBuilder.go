@@ -1,18 +1,21 @@
 package types
 
 type CodeModelGCCInvocation struct {
-	GCC       string
-	Arguments []string
+	GCC        string
+	InputFile  string
+	ObjectFile string
+	Arguments  []string
 }
 
 type CodeModelLibrary struct {
 	Name            string
 	SourceDirectory string
-	Invocations     []CodeModelGCCInvocation
+	ArchiveFile     string
+	Invocations     []*CodeModelGCCInvocation
 }
 
 type CodeModelBuilder struct {
-	MergedSketchFile string
-	Core             CodeModelLibrary
-	Libraries        []CodeModelLibrary
+	Core             *CodeModelLibrary
+	Sketch           *CodeModelLibrary
+	Libraries        []*CodeModelLibrary
 }

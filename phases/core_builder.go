@@ -62,7 +62,13 @@ func (s *CoreBuilder) Run(ctx *types.Context) error {
 		}
 	}
 
-	archiveFile, objectFiles, err := compileCore(coreBuildPath, coreBuildCachePath, buildProperties, verbose, warningsLevel, logger)
+	var coreModel *types.CodeModelLibrary
+	if ctx.CodeModelBuilder != nil {
+		coreModel = new(types.CodeModelLibrary)
+		ctx.CodeModelBuilder.Core = coreModel
+	}
+
+	archiveFile, objectFiles, err := compileCore(coreBuildPath, coreBuildCachePath, buildProperties, verbose, warningsLevel, logger, coreModel)
 	if err != nil {
 		return i18n.WrapError(err)
 	}
@@ -73,7 +79,7 @@ func (s *CoreBuilder) Run(ctx *types.Context) error {
 	return nil
 }
 
-func compileCore(buildPath string, buildCachePath string, buildProperties properties.Map, verbose bool, warningsLevel string, logger i18n.Logger) (string, []string, error) {
+func compileCore(buildPath string, buildCachePath string, buildProperties properties.Map, verbose bool, warningsLevel string, logger i18n.Logger, coreModel *types.CodeModelLibrary) (string, []string, error) {
 	coreFolder := buildProperties[constants.BUILD_PROPERTIES_BUILD_CORE_PATH]
 	variantFolder := buildProperties[constants.BUILD_PROPERTIES_BUILD_VARIANT_PATH]
 
@@ -90,7 +96,7 @@ func compileCore(buildPath string, buildCachePath string, buildProperties proper
 
 	variantObjectFiles := []string{}
 	if variantFolder != constants.EMPTY_STRING {
-		variantObjectFiles, err = builder_utils.CompileFiles(variantObjectFiles, variantFolder, true, buildPath, buildProperties, includes, verbose, warningsLevel, logger)
+		variantObjectFiles, err = builder_utils.CompileFiles(variantObjectFiles, variantFolder, true, buildPath, buildProperties, includes, verbose, warningsLevel, logger, coreModel)
 		if err != nil {
 			return "", nil, i18n.WrapError(err)
 		}
@@ -114,18 +120,18 @@ func compileCore(buildPath string, buildCachePath string, buildProperties proper
 		}
 	}
 
-	coreObjectFiles, err := builder_utils.CompileFiles([]string{}, coreFolder, true, buildPath, buildProperties, includes, verbose, warningsLevel, logger)
+	coreObjectFiles, err := builder_utils.CompileFiles([]string{}, coreFolder, true, buildPath, buildProperties, includes, verbose, warningsLevel, logger, coreModel)
 	if err != nil {
 		return "", nil, i18n.WrapError(err)
 	}
 
-	archiveFile, err := builder_utils.ArchiveCompiledFiles(buildPath, "core.a", coreObjectFiles, buildProperties, verbose, logger)
+	archiveFile, err := builder_utils.ArchiveCompiledFiles(buildPath, "core.a", coreObjectFiles, buildProperties, verbose, logger, coreModel)
 	if err != nil {
 		return "", nil, i18n.WrapError(err)
 	}
 
 	// archive core.a
-	if targetArchivedCore != "" {
+	if targetArchivedCore != "" && coreModel != nil {
 		if verbose {
 			logger.Println(constants.LOG_LEVEL_INFO, constants.MSG_ARCHIVING_CORE_CACHE, targetArchivedCore)
 		}
