@@ -58,6 +58,7 @@ const FLAG_BUILD_OPTIONS_FILE = "build-options-file"
 const FLAG_HARDWARE = "hardware"
 const FLAG_TOOLS = "tools"
 const FLAG_BUILT_IN_LIBRARIES = "built-in-libraries"
+const FLAG_CODE_MODEL_FILE = "code-model-file"
 const FLAG_LIBRARIES = "libraries"
 const FLAG_PREFS = "prefs"
 const FLAG_FQBN = "fqbn"
@@ -136,6 +137,7 @@ var warningsLevelFlag *string
 var loggerFlag *string
 var versionFlag *bool
 var vidPidFlag *string
+var codeModelFile *string
 
 func init() {
 	compileFlag = flag.Bool(FLAG_ACTION_COMPILE, false, "compiles the given sketch")
@@ -145,6 +147,7 @@ func init() {
 	flag.Var(&hardwareFoldersFlag, FLAG_HARDWARE, "Specify a 'hardware' folder. Can be added multiple times for specifying multiple 'hardware' folders")
 	flag.Var(&toolsFoldersFlag, FLAG_TOOLS, "Specify a 'tools' folder. Can be added multiple times for specifying multiple 'tools' folders")
 	flag.Var(&librariesBuiltInFoldersFlag, FLAG_BUILT_IN_LIBRARIES, "Specify a built-in 'libraries' folder. These are low priority libraries. Can be added multiple times for specifying multiple built-in 'libraries' folders")
+	codeModelFile = flag.String(FLAG_CODE_MODEL_FILE, "", "Specify a code model file to generate")
 	flag.Var(&librariesFoldersFlag, FLAG_LIBRARIES, "Specify a 'libraries' folder. Can be added multiple times for specifying multiple 'libraries' folders")
 	flag.Var(&customBuildPropertiesFlag, FLAG_PREFS, "Specify a custom preference. Can be added multiple times for specifying multiple custom preferences")
 	fqbnFlag = flag.String(FLAG_FQBN, "", "fully qualified board name")
@@ -222,6 +225,11 @@ func main() {
 		printCompleteError(err)
 	} else if len(librariesBuiltInFolders) > 0 {
 		ctx.BuiltInLibrariesFolders = librariesBuiltInFolders
+	}
+
+	if codeModelFile != nil && *codeModelFile != "" {
+		ctx.CodeModelBuilder = new(types.CodeModelBuilder)
+		ctx.CodeModelBuilderFile = *codeModelFile
 	}
 
 	// FLAG_PREFS

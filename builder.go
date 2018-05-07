@@ -30,6 +30,8 @@
 package builder
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"os"
 	"reflect"
 	"strconv"
@@ -119,6 +121,7 @@ func (s *Builder) Run(ctx *types.Context) error {
 		&MergeSketchWithBootloader{},
 
 		&RecipeByPrefixSuffixRunner{Prefix: constants.HOOKS_POSTBUILD, Suffix: constants.HOOKS_PATTERN_SUFFIX},
+		&OutputCodeModel{},
 	}
 
 	mainErr := runCommands(ctx, commands, true)
@@ -230,4 +233,17 @@ func RunParseHardwareAndDumpBuildProperties(ctx *types.Context) error {
 func RunPreprocess(ctx *types.Context) error {
 	command := Preprocess{}
 	return command.Run(ctx)
+}
+
+type OutputCodeModel struct{}
+
+func (s *OutputCodeModel) Run(ctx *types.Context) error {
+	if ctx.CodeModelBuilder != nil {
+		var bytes, err = json.Marshal(ctx.CodeModelBuilder)
+		if err != nil {
+			return err
+		}
+		ioutil.WriteFile(ctx.CodeModelBuilderFile, bytes, 0644)
+	}
+	return nil
 }

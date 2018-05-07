@@ -75,6 +75,9 @@ type Context struct {
 	PrototypesLineWhereToInsert int
 	Prototypes                  []*Prototype
 
+	CodeModelBuilder     *CodeModelBuilder
+	CodeModelBuilderFile string
+
 	// Verbosity settings
 	Verbose           bool
 	DebugPreprocessor bool
