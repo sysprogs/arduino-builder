@@ -25,8 +25,9 @@ type KnownHeader struct {
 }
 
 type CodeModelBuilder struct {
-	Core         *CodeModelLibrary
-	Sketch       *CodeModelLibrary
-	Libraries    []*CodeModelLibrary
-	KnownHeaders []*KnownHeader
+	Core              *CodeModelLibrary
+	Sketch            *CodeModelLibrary
+	Libraries         []*CodeModelLibrary
+	KnownHeaders      []*KnownHeader
+	LinkerCommandLine string
 }
