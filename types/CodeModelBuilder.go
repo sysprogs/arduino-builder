@@ -14,8 +14,19 @@ type CodeModelLibrary struct {
 	Invocations     []*CodeModelGCCInvocation
 }
 
+type KnownLibrary struct {
+	RelatedLibraryName      string
+	RelatedLibraryDirectory string
+}
+
+type KnownHeader struct {
+	Name      string
+	Libraries []*KnownLibrary
+}
+
 type CodeModelBuilder struct {
-	Core             *CodeModelLibrary
-	Sketch           *CodeModelLibrary
-	Libraries        []*CodeModelLibrary
+	Core         *CodeModelLibrary
+	Sketch       *CodeModelLibrary
+	Libraries    []*CodeModelLibrary
+	KnownHeaders []*KnownHeader
 }

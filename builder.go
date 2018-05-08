@@ -121,10 +121,30 @@ func (s *Builder) Run(ctx *types.Context) error {
 		&MergeSketchWithBootloader{},
 
 		&RecipeByPrefixSuffixRunner{Prefix: constants.HOOKS_POSTBUILD, Suffix: constants.HOOKS_PATTERN_SUFFIX},
-		&OutputCodeModel{},
 	}
 
 	mainErr := runCommands(ctx, commands, true)
+
+	if ctx.CodeModelBuilder != nil {
+		for header, libraries := range ctx.HeaderToLibraries {
+			var knownHeader = new(types.KnownHeader)
+			knownHeader.Name = header
+			for _, library := range libraries {
+				var knownLib = new(types.KnownLibrary)
+				knownLib.RelatedLibraryName = library.Name
+				knownLib.RelatedLibraryDirectory = library.SrcFolder
+				knownHeader.Libraries = append(knownHeader.Libraries, knownLib)
+			}
+			ctx.CodeModelBuilder.KnownHeaders = append(ctx.CodeModelBuilder.KnownHeaders, knownHeader)
+		}
+
+		var bytes, err = json.MarshalIndent(ctx.CodeModelBuilder, "", "    ")
+		if err != nil {
+			return err
+		}
+		ioutil.WriteFile(ctx.CodeModelBuilderFile, bytes, 0644)
+		return nil
+	}
 
 	commands = []types.Command{
 		&PrintUsedAndNotUsedLibraries{SketchError: mainErr != nil},
@@ -233,17 +253,4 @@ func RunParseHardwareAndDumpBuildProperties(ctx *types.Context) error {
 func RunPreprocess(ctx *types.Context) error {
 	command := Preprocess{}
 	return command.Run(ctx)
-}
-
-type OutputCodeModel struct{}
-
-func (s *OutputCodeModel) Run(ctx *types.Context) error {
-	if ctx.CodeModelBuilder != nil {
-		var bytes, err = json.MarshalIndent(ctx.CodeModelBuilder, "", "    ")
-		if err != nil {
-			return err
-		}
-		ioutil.WriteFile(ctx.CodeModelBuilderFile, bytes, 0644)
-	}
-	return nil
 }
