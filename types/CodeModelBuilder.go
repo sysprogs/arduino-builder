@@ -29,5 +29,6 @@ type CodeModelBuilder struct {
 	Sketch            *CodeModelLibrary
 	Libraries         []*CodeModelLibrary
 	KnownHeaders      []*KnownHeader
+	Prototypes        []*Prototype
 	LinkerCommandLine string
 }

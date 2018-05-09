@@ -185,7 +185,7 @@ func compileFileWithRecipe(sourcePath string, source string, buildPath string, b
 		invocation.GCC = command.Path
 		invocation.InputFile = source
 		invocation.ObjectFile = properties[constants.BUILD_PROPERTIES_OBJECT_FILE]
-		invocation.Arguments = command.Args
+		invocation.Arguments = command.Args[1:]
 		libraryModel.Invocations = append(libraryModel.Invocations, invocation)
 	} else {
 		objIsUpToDate, err := ObjFileIsUpToDate(properties[constants.BUILD_PROPERTIES_SOURCE_FILE], properties[constants.BUILD_PROPERTIES_OBJECT_FILE], filepath.Join(buildPath, relativeSource+".d"))

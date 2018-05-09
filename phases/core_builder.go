@@ -85,6 +85,11 @@ func compileCore(buildPath string, buildCachePath string, buildProperties proper
 
 	targetCoreFolder := buildProperties[constants.BUILD_PROPERTIES_RUNTIME_PLATFORM_PATH]
 
+	if coreModel != nil {
+		coreModel.SourceDirectory = coreFolder
+		coreModel.Name = buildProperties[constants.LIBRARY_NAME]
+	}
+
 	includes := []string{}
 	includes = append(includes, coreFolder)
 	if variantFolder != constants.EMPTY_STRING {

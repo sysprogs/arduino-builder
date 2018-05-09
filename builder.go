@@ -135,6 +135,8 @@ func (s *Builder) Run(ctx *types.Context) error {
 				knownLib.RelatedLibraryDirectory = library.SrcFolder
 				knownHeader.Libraries = append(knownHeader.Libraries, knownLib)
 			}
+
+			ctx.CodeModelBuilder.Prototypes = ctx.Prototypes
 			ctx.CodeModelBuilder.KnownHeaders = append(ctx.CodeModelBuilder.KnownHeaders, knownHeader)
 		}
 
