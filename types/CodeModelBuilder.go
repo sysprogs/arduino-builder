@@ -15,13 +15,26 @@ type CodeModelLibrary struct {
 }
 
 type KnownLibrary struct {
-	RelatedLibraryName      string
-	RelatedLibraryDirectory string
+	Folder        string
+	SrcFolder     string
+	UtilityFolder string
+	Layout        LibraryLayout
+	Name          string
+	RealName      string
+	IsLegacy      bool
+	Version       string
+	Author        string
+	Maintainer    string
+	Sentence      string
+	Paragraph     string
+	URL           string
+	Category      string
+	License       string
 }
 
 type KnownHeader struct {
-	Name      string
-	Libraries []*KnownLibrary
+	Name               string
+	LibraryDirectories []string
 }
 
 type CodeModelBuilder struct {
@@ -30,5 +43,6 @@ type CodeModelBuilder struct {
 	Libraries         []*CodeModelLibrary
 	KnownHeaders      []*KnownHeader
 	Prototypes        []*Prototype
+	KnownLibraries    []*KnownLibrary
 	LinkerCommandLine string
 }
