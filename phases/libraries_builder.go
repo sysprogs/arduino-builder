@@ -61,7 +61,7 @@ func (s *LibrariesBuilder) Run(ctx *types.Context) error {
 		return i18n.WrapError(err)
 	}
 
-	objectFiles, err := compileLibraries(libraries, librariesBuildPath, buildProperties, includes, verbose, warningsLevel, logger, ctx.CodeModelBuilder)
+	objectFiles, err := compileLibraries(libraries, librariesBuildPath, buildProperties, includes, verbose, warningsLevel, logger, ctx.CodeModelBuilder, ctx.UnoptimizeLibraries)
 	if err != nil {
 		return i18n.WrapError(err)
 	}
@@ -99,8 +99,11 @@ func fixLDFLAGforPrecompiledLibraries(ctx *types.Context, libraries []*types.Lib
 	return nil
 }
 
-func compileLibraries(libraries []*types.Library, buildPath string, buildProperties properties.Map, includes []string, verbose bool, warningsLevel string, logger i18n.Logger, codeModel *types.CodeModelBuilder) ([]string, error) {
+func compileLibraries(libraries []*types.Library, buildPath string, buildProperties properties.Map, includes []string, verbose bool, warningsLevel string, logger i18n.Logger, codeModel *types.CodeModelBuilder, unoptimize bool) ([]string, error) {
 	objectFiles := []string{}
+
+	var unoptimizedProperties = builder_utils.RemoveOptimizationFromBuildProperties(buildProperties)
+
 	for _, library := range libraries {
 
 		var libraryModel *types.CodeModelLibrary
@@ -111,7 +114,12 @@ func compileLibraries(libraries []*types.Library, buildPath string, buildPropert
 			codeModel.Libraries = append(codeModel.Libraries, libraryModel)
 		}
 
-		libraryObjectFiles, err := compileLibrary(library, buildPath, buildProperties, includes, verbose, warningsLevel, logger, libraryModel)
+		var effectiveProperties = buildProperties
+		if unoptimize && library.Properties["supports_unoptimized_builds"] != "false" {
+			effectiveProperties = unoptimizedProperties
+		}
+
+		libraryObjectFiles, err := compileLibrary(library, buildPath, effectiveProperties, includes, verbose, warningsLevel, logger, libraryModel)
 		if err != nil {
 			return nil, i18n.WrapError(err)
 		}

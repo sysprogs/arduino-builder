@@ -59,6 +59,7 @@ const FLAG_HARDWARE = "hardware"
 const FLAG_TOOLS = "tools"
 const FLAG_BUILT_IN_LIBRARIES = "built-in-libraries"
 const FLAG_CODE_MODEL_FILE = "code-model-file"
+const FLAG_UNOPTIMIZE = "unoptimize"
 const FLAG_LIBRARIES = "libraries"
 const FLAG_PREFS = "prefs"
 const FLAG_FQBN = "fqbn"
@@ -138,6 +139,7 @@ var loggerFlag *string
 var versionFlag *bool
 var vidPidFlag *string
 var codeModelFile *string
+var unoptimizeOptions *string
 
 func init() {
 	compileFlag = flag.Bool(FLAG_ACTION_COMPILE, false, "compiles the given sketch")
@@ -148,6 +150,7 @@ func init() {
 	flag.Var(&toolsFoldersFlag, FLAG_TOOLS, "Specify a 'tools' folder. Can be added multiple times for specifying multiple 'tools' folders")
 	flag.Var(&librariesBuiltInFoldersFlag, FLAG_BUILT_IN_LIBRARIES, "Specify a built-in 'libraries' folder. These are low priority libraries. Can be added multiple times for specifying multiple built-in 'libraries' folders")
 	codeModelFile = flag.String(FLAG_CODE_MODEL_FILE, "", "Specify a code model file to generate")
+	unoptimizeOptions = flag.String(FLAG_UNOPTIMIZE, "", "Specify parts of the design to unoptimize. Supported options: sketch, core, libraries")
 	flag.Var(&librariesFoldersFlag, FLAG_LIBRARIES, "Specify a 'libraries' folder. Can be added multiple times for specifying multiple 'libraries' folders")
 	flag.Var(&customBuildPropertiesFlag, FLAG_PREFS, "Specify a custom preference. Can be added multiple times for specifying multiple custom preferences")
 	fqbnFlag = flag.String(FLAG_FQBN, "", "fully qualified board name")
@@ -230,6 +233,18 @@ func main() {
 	if codeModelFile != nil && *codeModelFile != "" {
 		ctx.CodeModelBuilder = new(types.CodeModelBuilder)
 		ctx.CodeModelBuilderFile = *codeModelFile
+	}
+
+	if unoptimizeOptions != nil && *unoptimizeOptions != "" {
+		for _, v := range strings.Split(*unoptimizeOptions, ",") {
+			if v == "core" {
+				ctx.UnoptimizeCore = true
+			} else if v == "libraries" {
+				ctx.UnoptimizeLibraries = true
+			} else if v == "sketch" {
+				ctx.UnoptimizeSketch = true
+			}
+		}
 	}
 
 	// FLAG_PREFS

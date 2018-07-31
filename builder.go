@@ -163,9 +163,12 @@ func (s *Builder) Run(ctx *types.Context) error {
 			ctx.CodeModelBuilder.KnownLibraries = append(ctx.CodeModelBuilder.KnownLibraries, knownLib)
 		}
 
-		ctx.CodeModelBuilder.Common.OutputFile = ctx.BuildProperties.ExpandPropsInString("{build.path}/{build.project_name}.elf")
-		ctx.CodeModelBuilder.Common.MaxFLASHSize = ctx.BuildProperties[constants.PROPERTY_UPLOAD_MAX_SIZE]
-		ctx.CodeModelBuilder.Common.MaxRAMSize = ctx.BuildProperties[constants.PROPERTY_UPLOAD_MAX_DATA_SIZE]
+		for key, value := range ctx.BuildProperties {
+			var kv = new(types.KeyValuePair)
+			kv.Key = key
+			kv.Value = value
+			ctx.CodeModelBuilder.BuildProperties = append(ctx.CodeModelBuilder.BuildProperties, *kv)
+		}
 
 		var bytes, err = json.MarshalIndent(ctx.CodeModelBuilder, "", "    ")
 		if err != nil {

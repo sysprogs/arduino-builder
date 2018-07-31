@@ -44,7 +44,7 @@ type SketchBuilder struct{}
 
 func (s *SketchBuilder) Run(ctx *types.Context) error {
 	sketchBuildPath := ctx.SketchBuildPath
-	buildProperties := ctx.BuildProperties
+	var buildProperties = ctx.BuildProperties
 	includes := ctx.IncludeFolders
 	includes = utils.Map(includes, utils.WrapWithHyphenI)
 	verbose := ctx.Verbose
@@ -62,6 +62,10 @@ func (s *SketchBuilder) Run(ctx *types.Context) error {
 		ctx.CodeModelBuilder.Sketch = sketchModel
 	} else {
 		sketchModel = nil
+	}
+
+	if ctx.UnoptimizeSketch {
+		buildProperties = builder_utils.RemoveOptimizationFromBuildProperties(buildProperties)
 	}
 
 	var objectFiles []string

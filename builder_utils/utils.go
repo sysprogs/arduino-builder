@@ -82,6 +82,28 @@ func CompileFiles(objectFiles []string, sourcePath string, recurse bool, buildPa
 	return objectFiles, nil
 }
 
+func ReplaceOptimizationFlags(str string) string {
+	var tmp = strings.Split(str, " ")
+	for k, v := range tmp {
+		if v == "-O2" || v == "-Os" || v == "-O1" || v == "-Og" || v == "-O3" {
+			tmp[k] = "-O0"
+		}
+	}
+
+	return strings.Join(tmp, " ")
+}
+
+func RemoveOptimizationFromBuildProperties(properties properties.Map) properties.Map {
+	var result = make(map[string]string)
+	for k, v := range properties {
+		result[k] = v
+	}
+
+	result["compiler.c.flags"] = ReplaceOptimizationFlags(result["compiler.c.flags"])
+	result["compiler.cpp.flags"] = ReplaceOptimizationFlags(result["compiler.cpp.flags"])
+	return result
+}
+
 func compileFilesWithExtensionWithRecipe(objectFiles []string, sourcePath string, recurse bool, buildPath string, buildProperties properties.Map, includes []string, extension string, recipe string, verbose bool, warningsLevel string, logger i18n.Logger, libraryModel *types.CodeModelLibrary) ([]string, error) {
 	sources, err := findFilesInFolder(sourcePath, extension, recurse)
 	if err != nil {

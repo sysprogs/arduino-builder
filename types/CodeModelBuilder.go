@@ -37,12 +37,6 @@ type KnownHeader struct {
 	LibraryDirectories []string
 }
 
-type CommonCodeModelProperties struct {
-	OutputFile   string
-	MaxFLASHSize string
-	MaxRAMSize   string
-}
-
 type CodeModelBuilder struct {
 	Core              *CodeModelLibrary
 	Sketch            *CodeModelLibrary
@@ -51,5 +45,5 @@ type CodeModelBuilder struct {
 	Prototypes        []*Prototype
 	KnownLibraries    []*KnownLibrary
 	LinkerCommandLine string
-	Common            CommonCodeModelProperties
+	BuildProperties   []KeyValuePair
 }

@@ -45,7 +45,7 @@ type CoreBuilder struct{}
 func (s *CoreBuilder) Run(ctx *types.Context) error {
 	coreBuildPath := ctx.CoreBuildPath
 	coreBuildCachePath := ctx.CoreBuildCachePath
-	buildProperties := ctx.BuildProperties
+	var buildProperties = ctx.BuildProperties
 	verbose := ctx.Verbose
 	warningsLevel := ctx.WarningsLevel
 	logger := ctx.GetLogger()
@@ -66,6 +66,10 @@ func (s *CoreBuilder) Run(ctx *types.Context) error {
 	if ctx.CodeModelBuilder != nil {
 		coreModel = new(types.CodeModelLibrary)
 		ctx.CodeModelBuilder.Core = coreModel
+	}
+
+	if ctx.UnoptimizeCore {
+		buildProperties = builder_utils.RemoveOptimizationFromBuildProperties(buildProperties)
 	}
 
 	archiveFile, objectFiles, err := compileCore(coreBuildPath, coreBuildCachePath, buildProperties, verbose, warningsLevel, logger, coreModel)
