@@ -67,6 +67,8 @@ func (s *SketchBuilder) Run(ctx *types.Context) error {
 	if ctx.UnoptimizeSketch {
 		buildProperties = builder_utils.RemoveOptimizationFromBuildProperties(buildProperties)
 	}
+	
+	buildProperties = builder_utils.ExpandSysprogsExtensionProperties(buildProperties)
 
 	var objectFiles []string
 	objectFiles, err = builder_utils.CompileFiles(objectFiles, sketchBuildPath, false, sketchBuildPath, buildProperties, includes, verbose, warningsLevel, logger, sketchModel)

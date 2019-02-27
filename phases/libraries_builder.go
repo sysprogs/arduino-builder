@@ -118,6 +118,8 @@ func compileLibraries(libraries []*types.Library, buildPath string, buildPropert
 		if unoptimize && library.Properties["supports_unoptimized_builds"] != "false" {
 			effectiveProperties = unoptimizedProperties
 		}
+		
+		effectiveProperties = builder_utils.ExpandSysprogsExtensionProperties(effectiveProperties)
 
 		libraryObjectFiles, err := compileLibrary(library, buildPath, effectiveProperties, includes, verbose, warningsLevel, logger, libraryModel)
 		if err != nil {

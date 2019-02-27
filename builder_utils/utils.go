@@ -87,6 +87,8 @@ func ReplaceOptimizationFlags(str string) string {
 	for k, v := range tmp {
 		if v == "-O2" || v == "-Os" || v == "-O1" || v == "-Og" || v == "-O3" {
 			tmp[k] = "-O0"
+		} else if v == "-flto" {
+			tmp[k] = ""
 		}
 	}
 
@@ -101,6 +103,17 @@ func RemoveOptimizationFromBuildProperties(properties properties.Map) properties
 
 	result["compiler.c.flags"] = ReplaceOptimizationFlags(result["compiler.c.flags"])
 	result["compiler.cpp.flags"] = ReplaceOptimizationFlags(result["compiler.cpp.flags"])
+	return result
+}
+
+func ExpandSysprogsExtensionProperties(properties properties.Map) properties.Map {
+	var result = make(map[string]string)
+	for k, v := range properties {
+		result[k] = v
+	}
+
+	result["compiler.c.flags"] += " " + result["com.sysprogs.extraflags"]
+	result["compiler.cpp.flags"] += " " + result["com.sysprogs.extraflags"]
 	return result
 }
 
