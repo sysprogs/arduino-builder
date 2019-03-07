@@ -52,16 +52,13 @@ func (s *LibrariesBuilder) Run(ctx *types.Context) error {
 	includes := ctx.IncludeFolders
 	includes = utils.Map(includes, utils.WrapWithHyphenI)
 	libraries := ctx.ImportedLibraries
-	verbose := ctx.Verbose
-	warningsLevel := ctx.WarningsLevel
-	logger := ctx.GetLogger()
 
 	err := utils.EnsureFolderExists(librariesBuildPath)
 	if err != nil {
 		return i18n.WrapError(err)
 	}
 
-	objectFiles, err := compileLibraries(libraries, librariesBuildPath, buildProperties, includes, verbose, warningsLevel, logger, ctx.CodeModelBuilder, ctx.UnoptimizeLibraries)
+	objectFiles, err := compileLibraries(ctx, libraries, librariesBuildPath, buildProperties, includes)
 	if err != nil {
 		return i18n.WrapError(err)
 	}
@@ -93,13 +90,13 @@ func fixLDFLAGforPrecompiledLibraries(ctx *types.Context, libraries []*types.Lib
 				name = strings.Replace(name, "lib", "", 1)
 				libs_cmd += "-l" + name + " "
 			}
-			ctx.BuildProperties[constants.BUILD_PROPERTIES_COMPILER_C_ELF_EXTRAFLAGS] += "\"-L" + path + "\" " + libs_cmd
+			ctx.BuildProperties[constants.BUILD_PROPERTIES_COMPILER_LIBRARIES_LDFLAGS] += "\"-L" + path + "\" " + libs_cmd + " "
 		}
 	}
 	return nil
 }
 
-func compileLibraries(libraries []*types.Library, buildPath string, buildProperties properties.Map, includes []string, verbose bool, warningsLevel string, logger i18n.Logger, codeModel *types.CodeModelBuilder, unoptimize bool) ([]string, error) {
+func compileLibraries(ctx *types.Context, libraries []*types.Library, buildPath string, buildProperties properties.Map, includes []string) ([]string, error) {
 	objectFiles := []string{}
 
 	var unoptimizedProperties = builder_utils.RemoveOptimizationFromBuildProperties(buildProperties)
@@ -107,21 +104,21 @@ func compileLibraries(libraries []*types.Library, buildPath string, buildPropert
 	for _, library := range libraries {
 
 		var libraryModel *types.CodeModelLibrary
-		if codeModel != nil {
+		if ctx.CodeModelBuilder != nil {
 			libraryModel = new(types.CodeModelLibrary)
 			libraryModel.Name = library.Name
 			libraryModel.SourceDirectory = library.SrcFolder
-			codeModel.Libraries = append(codeModel.Libraries, libraryModel)
+			ctx.CodeModelBuilder.Libraries = append(ctx.CodeModelBuilder.Libraries, libraryModel)
 		}
 
 		var effectiveProperties = buildProperties
-		if unoptimize && library.Properties["supports_unoptimized_builds"] != "false" {
+		if ctx.UnoptimizeLibraries && library.Properties["supports_unoptimized_builds"] != "false" {
 			effectiveProperties = unoptimizedProperties
 		}
 		
 		effectiveProperties = builder_utils.ExpandSysprogsExtensionProperties(effectiveProperties)
 
-		libraryObjectFiles, err := compileLibrary(library, buildPath, effectiveProperties, includes, verbose, warningsLevel, logger, libraryModel)
+		libraryObjectFiles, err := compileLibrary(ctx, library, buildPath, buildProperties, includes, libraryModel)
 		if err != nil {
 			return nil, i18n.WrapError(err)
 		}
@@ -132,8 +129,9 @@ func compileLibraries(libraries []*types.Library, buildPath string, buildPropert
 
 }
 
-func compileLibrary(library *types.Library, buildPath string, buildProperties properties.Map, includes []string, verbose bool, warningsLevel string, logger i18n.Logger, libraryModel *types.CodeModelLibrary) ([]string, error) {
-	if verbose {
+func compileLibrary(ctx *types.Context, library *types.Library, buildPath string, buildProperties properties.Map, includes []string, libraryModel *types.CodeModelLibrary) ([]string, error) {
+	logger := ctx.GetLogger()
+	if ctx.Verbose {
 		logger.Println(constants.LOG_LEVEL_INFO, "Compiling library \"{0}\"", library.Name)
 	}
 	libraryBuildPath := filepath.Join(buildPath, library.Name)
@@ -163,12 +161,12 @@ func compileLibrary(library *types.Library, buildPath string, buildProperties pr
 	}
 
 	if library.Layout == types.LIBRARY_RECURSIVE {
-		objectFiles, err = builder_utils.CompileFilesRecursive(objectFiles, library.SrcFolder, libraryBuildPath, buildProperties, includes, verbose, warningsLevel, logger, libraryModel)
+		objectFiles, err = builder_utils.CompileFilesRecursive(ctx, objectFiles, library.SrcFolder, libraryBuildPath, buildProperties, includes, libraryModel)
 		if err != nil {
 			return nil, i18n.WrapError(err)
 		}
 		if library.DotALinkage {
-			archiveFile, err := builder_utils.ArchiveCompiledFiles(libraryBuildPath, library.Name+".a", objectFiles, buildProperties, verbose, logger, libraryModel)
+			archiveFile, err := builder_utils.ArchiveCompiledFiles(ctx, libraryBuildPath, library.Name+".a", objectFiles, buildProperties, libraryModel)
 			if err != nil {
 				return nil, i18n.WrapError(err)
 			}
@@ -178,14 +176,14 @@ func compileLibrary(library *types.Library, buildPath string, buildProperties pr
 		if library.UtilityFolder != "" {
 			includes = append(includes, utils.WrapWithHyphenI(library.UtilityFolder))
 		}
-		objectFiles, err = builder_utils.CompileFiles(objectFiles, library.SrcFolder, false, libraryBuildPath, buildProperties, includes, verbose, warningsLevel, logger, libraryModel)
+		objectFiles, err = builder_utils.CompileFiles(ctx, objectFiles, library.SrcFolder, false, libraryBuildPath, buildProperties, includes, libraryModel)
 		if err != nil {
 			return nil, i18n.WrapError(err)
 		}
 
 		if library.UtilityFolder != "" {
 			utilityBuildPath := filepath.Join(libraryBuildPath, constants.LIBRARY_FOLDER_UTILITY)
-			objectFiles, err = builder_utils.CompileFiles(objectFiles, library.UtilityFolder, false, utilityBuildPath, buildProperties, includes, verbose, warningsLevel, logger, libraryModel)
+			objectFiles, err = builder_utils.CompileFiles(ctx, objectFiles, library.UtilityFolder, false, utilityBuildPath, buildProperties, includes, libraryModel)
 			if err != nil {
 				return nil, i18n.WrapError(err)
 			}
