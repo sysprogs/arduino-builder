@@ -118,7 +118,7 @@ func compileLibraries(ctx *types.Context, libraries []*types.Library, buildPath 
 		
 		effectiveProperties = builder_utils.ExpandSysprogsExtensionProperties(effectiveProperties)
 
-		libraryObjectFiles, err := compileLibrary(ctx, library, buildPath, buildProperties, includes, libraryModel)
+		libraryObjectFiles, err := compileLibrary(ctx, library, buildPath, effectiveProperties, includes, libraryModel)
 		if err != nil {
 			return nil, i18n.WrapError(err)
 		}
