@@ -10,3 +10,5 @@ require (
 	github.com/juju/errors v0.0.0-20190207033735-e65537c515d7 // indirect
 	github.com/sirupsen/logrus v1.4.2
 )
+
+replace github.com/arduino/arduino-cli => ../arduino-cli
